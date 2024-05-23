@@ -13,8 +13,11 @@
         }
         .container {
             max-width: 90%;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
@@ -29,11 +32,12 @@
             color: #666;
         }
         .input-group input[type="number"] {
-            width: 100%;
+            width: calc(50% - 10px);
             padding: 10px;
             font-size: 16px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
         }
         .input-group button {
             width: 100%;
@@ -64,30 +68,4 @@
     </div>
 
     <script>
-        document.getElementById("submitBtn").addEventListener("click", function() {
-            var hour = document.getElementById("hour").value;
-            var minute = document.getElementById("minute").value;
-
-            // Send hour and minute values to server using fetch or XMLHttpRequest
-            // Example:
-            // fetch('/set_time', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ hour: hour, minute: minute }),
-            // })
-            // .then(response => {
-            //     if (response.ok) {
-            //         // Handle successful response
-            //     } else {
-            //         // Handle error response
-            //     }
-            // })
-            // .catch(error => {
-            //     // Handle network error
-            // });
-        });
-    </script>
-</body>
-</html>
+        document.getElementById("submitBtn").addEve
