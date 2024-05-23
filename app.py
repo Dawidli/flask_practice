@@ -54,7 +54,7 @@ def run_alarm():
         time.sleep(1)
 
     print("Gradual increase is done, sun will die in 1 hour")
-    time.sleep(3600)
+    time.sleep(10)
     sun(pwm, power=0)
 
 def remap(value, from_min, from_max, to_min, to_max):
