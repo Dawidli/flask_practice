@@ -27,8 +27,6 @@ def get_time():
 
 
 def setup(pwm_pin: int):
-    pwm_pin = int(pwm_pin.lower())
-
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(pwm_pin, GPIO.OUT)
