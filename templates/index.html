@@ -3,71 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="chrome">
-    <title>Set Time</title>
+    <title>Light Control</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
         }
-        form {
-            display: flex;
-            flex-direction: column;
-            max-width: 300px;
-            margin: auto;
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 20px;
         }
-        label, input, button {
-            margin: 5px 0;
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .input-group button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Set Time for Script</h1>
-    <form id="timeForm">
-        <label for="hour">Hour:</label>
-        <input type="number" id="hour" name="hour" min="0" max="23" required>
-
-        <label for="minute">Minute:</label>
-        <input type="number" id="minute" name="minute" min="0" max="59" required>
-
-        <button type="submit">Submit</button>
-    </form>
-    <p id="currentTime"></p>
+    <div class="container">
+        <h1>Light Control</h1>
+        <div class="input-group">
+            <label for="hour">Hour:</label>
+            <input type="number" id="hour" name="hour" min="0" max="23" placeholder="Enter hour (0-23)">
+        </div>
+        <div class="input-group">
+            <label for="minute">Minute:</label>
+            <input type="number" id="minute" name="minute" min="0" max="59" placeholder="Enter minute (0-59)">
+        </div>
+        <div class="input-group">
+            <button id="submitBtn">Set Time</button>
+        </div>
+    </div>
 
     <script>
-        document.getElementById('timeForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from submitting the traditional way
-            const hour = document.getElementById('hour').value;
-            const minute = document.getElementById('minute').value;
+        document.getElementById("submitBtn").addEventListener("click", function() {
+            var hour = document.getElementById("hour").value;
+            var minute = document.getElementById("minute").value;
 
-            fetch('/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `hour=${hour}&minute=${minute}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(`Time set to ${data.hour}:${data.minute}`);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            // Send hour and minute values to server using fetch or XMLHttpRequest
+            // Example:
+            // fetch('/set_time', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({ hour: hour, minute: minute }),
+            // })
+            // .then(response => {
+            //     if (response.ok) {
+            //         // Handle successful response
+            //     } else {
+            //         // Handle error response
+            //     }
+            // })
+            // .catch(error => {
+            //     // Handle network error
+            // });
         });
-
-        function updateCurrentTime() {
-            fetch('/get_time')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('currentTime').innerText = `Current Time Set: ${data.hour}:${data.minute}`;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        setInterval(updateCurrentTime, 5000); // Update every 5 seconds
-        updateCurrentTime(); // Initial call
     </script>
 </body>
 </html>
