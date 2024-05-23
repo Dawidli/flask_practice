@@ -66,6 +66,7 @@ def check_time():
         now = datetime.datetime.now()
         if latest_time['hour'] is not None and latest_time['minute'] is not None:
             if now.hour == latest_time['hour'] and now.minute == latest_time['minute']:
+                print(f"Current time: {now.hour}:{now.minute}\nAlarm time: {latest_time['hour']}:{latest_time['minute']}")
                 print("Running alarm")
                 run_alarm()
         time.sleep(60)  # Check every minute
