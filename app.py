@@ -62,18 +62,29 @@ def remap(value, from_min, from_max, to_min, to_max):
     # Convert the value from the original range to a value in the new range
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
+import datetime
+import time
+
 def check_time():
     while True:
         now = datetime.datetime.now()
         if latest_time['hour'] is not None and latest_time['minute'] is not None:
             alarm_time = datetime.time(latest_time['hour'], latest_time['minute'])
             alarm_datetime = datetime.datetime.combine(datetime.date.today(), alarm_time)
-            adjusted_alarm_datetime = alarm_datetime - datetime.timedelta(minutes=30)
-            if now >= adjusted_alarm_datetime:
+
+            # Check if alarm time is earlier than current time
+            if alarm_datetime < now:
+                # Adjust alarm to next day
+                alarm_datetime += datetime.timedelta(days=1)
+
+            # Check if it's time to trigger the alarm
+            if now >= alarm_datetime:
                 print(f"Current time: {now.hour}:{now.minute}\nAlarm time: {latest_time['hour']}:{latest_time['minute']}")
                 print("Running alarm")
                 run_alarm()
+
         time.sleep(1)  # Check every second
+
 
 
 if __name__ == "__main__":
