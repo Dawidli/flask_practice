@@ -31,7 +31,7 @@ def setup(pwm_pin: int):
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(pwm_pin, GPIO.OUT)
     GPIO.output(pwm_pin, GPIO.LOW)
-    pwm = GPIO.PWM(pwm_pin, 60) # Set frequency to 1 KHz
+    pwm = GPIO.PWM(pwm_pin, 1000) # Set frequency to 1 KHz
     pwm.start(0) # Set the starting Duty Cycle
     return pwm
 
@@ -69,7 +69,7 @@ def check_time():
                 print(f"Current time: {now.hour}:{now.minute}\nAlarm time: {latest_time['hour']}:{latest_time['minute']}")
                 print("Running alarm")
                 run_alarm()
-        time.sleep(1)  # Check every minute
+        time.sleep(1)  # Check every second
 
 
 if __name__ == "__main__":
