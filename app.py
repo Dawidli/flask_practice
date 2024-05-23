@@ -71,7 +71,9 @@ def check_time():
                 run_alarm()
         time.sleep(60)  # Check every minute
 
+
 if __name__ == "__main__":
     # Start the background thread
+    setup(33)
     Thread(target=check_time, daemon=True).start()
     app.run(debug=True, host='0.0.0.0', port=8080)
