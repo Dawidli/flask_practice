@@ -75,4 +75,4 @@ def check_time():
 if __name__ == "__main__":
     # Start the background thread
     Thread(target=check_time, daemon=True).start()
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=8080)
