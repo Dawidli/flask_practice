@@ -4,68 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Light Control</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            max-width: 90%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-        }
-        .input-group input[type="number"] {
-            width: calc(50% - 10px);
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-        .input-group button {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Light Control</h1>
-        <div class="input-group">
-            <label for="hour">Hour:</label>
-            <input type="number" id="hour" name="hour" min="0" max="23" placeholder="Enter hour (0-23)">
-        </div>
-        <div class="input-group">
-            <label for="minute">Minute:</label>
-            <input type="number" id="minute" name="minute" min="0" max="59" placeholder="Enter minute (0-59)">
-        </div>
-        <div class="input-group">
-            <button id="submitBtn">Set Time</button>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById("submitBtn").addEve
+    <h1>Light Control</h1>
+    <form id="lightForm">
+        <label for="hour">Hour:</label>
+        <input type="number" id="hour" name="hour" min="0" max="23" placeholder="Enter hour (0-23)" required><br><br>
+        <label for="minute">Minute:</label>
+        <input type="number" id="minute" name="minute" min="0" max="59" placeholder="Enter minute (0-59)" required><br><br>
+        <button type="submit">Set Time</button>
+    </form>
+</body>
+</html>
