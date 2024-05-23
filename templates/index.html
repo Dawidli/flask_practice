@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="chrome">
+    <title>Set Time</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px;
+            margin: auto;
+        }
+        label, input, button {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Set Time for Script</h1>
+    <form id="timeForm">
+        <label for="hour">Hour:</label>
+        <input type="number" id="hour" name="hour" min="0" max="23" required>
+
+        <label for="minute">Minute:</label>
+        <input type="number" id="minute" name="minute" min="0" max="59" required>
+
+        <button type="submit">Submit</button>
+    </form>
+    <p id="currentTime"></p>
+
+    <script>
+        document.getElementById('timeForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+            const hour = document.getElementById('hour').value;
+            const minute = document.getElementById('minute').value;
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `hour=${hour}&minute=${minute}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Time set to ${data.hour}:${data.minute}`);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function updateCurrentTime() {
+            fetch('/get_time')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentTime').innerText = `Current Time Set: ${data.hour}:${data.minute}`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        setInterval(updateCurrentTime, 5000); // Update every 5 seconds
+        updateCurrentTime(); // Initial call
+    </script>
+</body>
+</html>
