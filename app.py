@@ -20,23 +20,37 @@ logging.basicConfig(
 
 app = Flask(__name__)
 latest_time: Dict[str, Optional[int]] = {'hour': None, 'minute': None}
+stop_event = None  # Global variable to store the stop event
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 @app.route('/submit', methods=['POST'])
 def submit():
-    global latest_time
+    global latest_time, stop_event
     hour = request.form['hour']
     minute = request.form['minute']
     latest_time = {'hour': int(hour), 'minute': int(minute)}
     logging.info(f"Alarm time set to: {latest_time['hour']}:{latest_time['minute']}")
+
+    # Stop the previous alarm if it exists
+    if stop_event is not None:
+        stop_event.set()
+        logging.info("Stopping previous alarm.")
+
+    # Reset the stop event
+    stop_event = Event()
+
     return jsonify(latest_time)
+
 
 @app.route('/get_time', methods=['GET'])
 def get_time():
     return jsonify(latest_time)
+
 
 def setup(pwm_pin: int):
     GPIO.setwarnings(False)
@@ -47,10 +61,12 @@ def setup(pwm_pin: int):
     pwm.start(0)  # Set the starting Duty Cycle
     return pwm
 
+
 def destroy(pwm, pwm_pin):
     pwm.stop()
     GPIO.output(pwm_pin, GPIO.LOW)
     GPIO.cleanup()
+
 
 def sun(pwm, power: int):
     pwm.ChangeDutyCycle(power)
@@ -61,10 +77,11 @@ def run_alarm(stop_event):
     pwm = setup(33)
 
     for i in range(1800):
-        # Check if a new alarm time is set
+        # Check if the stop event is set
         if stop_event.is_set():
             logging.info("New alarm time set. Stopping alarm.")
-            break
+            destroy(pwm, 33)  # Stop the alarm
+            return
 
         brightness = remap(i, 0, 1800, 30, 100)
         sun(pwm, power=brightness)
@@ -73,6 +90,7 @@ def run_alarm(stop_event):
     print("Gradual increase is done, sun will die in 1 hour")
     time.sleep(3600)
     sun(pwm, power=0)
+
 
 def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
@@ -99,10 +117,10 @@ def check_time():
             # Check if it's time to trigger the alarm
             if now >= start_time:
                 logging.info(f"Running alarm at: {now}")  # Log when the alarm is triggered
-                stop_event = Event()  # Create a stop event
                 run_alarm(stop_event)  # Pass the stop event to run_alarm
 
         time.sleep(1)  # Check every second
+
 
 if __name__ == "__main__":
     # Start the background thread
