@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from threading import Thread
+from threading import Thread, Event
 from typing import Dict, Optional
 import datetime
 import time
@@ -56,19 +56,27 @@ def sun(pwm, power: int):
     pwm.ChangeDutyCycle(power)
     time.sleep(0.01)
 
-def run_alarm():
+
+def run_alarm(stop_event):
     pwm = setup(33)
+
     for i in range(1800):
+        # Check if a new alarm time is set
+        if stop_event.is_set():
+            logging.info("New alarm time set. Stopping alarm.")
+            break
+
         brightness = remap(i, 0, 1800, 30, 100)
         sun(pwm, power=brightness)
         time.sleep(1)
-    logging.info("Gradual increase is done, sun will die in 1 hour")
+
+    print("Gradual increase is done, sun will die in 1 hour")
     time.sleep(3600)
     sun(pwm, power=0)
-    destroy(pwm, 33)
 
 def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
+
 
 def check_time():
     while True:
@@ -83,20 +91,18 @@ def check_time():
                 # Adjust alarm to next day
                 alarm_datetime += datetime.timedelta(days=1)
 
-            # Calculate the time to start the alarm (2 minutes before the set time for quick testing)
-            start_time = alarm_datetime - datetime.timedelta(minutes=2)
+            # Calculate the start time as 30 minutes before the alarm time
+            start_time = alarm_datetime - datetime.timedelta(minutes=30)
             logging.debug(f"Alarm time: {alarm_datetime}")  # Log the alarm time
             logging.debug(f"Start time: {start_time}")  # Log the start time
 
             # Check if it's time to trigger the alarm
             if now >= start_time:
                 logging.info(f"Running alarm at: {now}")  # Log when the alarm is triggered
-                run_alarm()
-                latest_time['hour'] = None  # Reset the alarm after it has triggered
-                latest_time['minute'] = None
+                stop_event = Event()  # Create a stop event
+                run_alarm(stop_event)  # Pass the stop event to run_alarm
 
         time.sleep(1)  # Check every second
-
 
 if __name__ == "__main__":
     # Start the background thread
