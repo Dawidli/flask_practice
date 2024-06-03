@@ -96,10 +96,12 @@ def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
 
-def check_time():
+def check_time(test_time=None):
     while True:
         if latest_time['hour'] is not None and latest_time['minute'] is not None:
             now = datetime.datetime.now()
+            if test_time:
+                now = test_time  # Manually set current time for testing
             logging.debug(f"Current time: {now}")  # Log the current time
             alarm_time = datetime.time(latest_time['hour'], latest_time['minute'])
             alarm_datetime = datetime.datetime.combine(datetime.date.today(), alarm_time)
@@ -122,8 +124,12 @@ def check_time():
         time.sleep(1)  # Check every second
 
 
+
 if __name__ == "__main__":
     # Start the background thread
     setup(33)
-    Thread(target=check_time, daemon=True).start()
+    # Thread(target=check_time, daemon=True).start()
+    test_time = datetime.datetime(2024, 6, 4, 6, 0)  # Set a test time (for example, 6:00 AM)
+    check_time(test_time)
     app.run(debug=True, host='0.0.0.0', port=8080)
+
