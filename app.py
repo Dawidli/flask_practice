@@ -100,7 +100,7 @@ def check_time():
     global stop_event
     while True:
         if latest_time['hour'] is not None and latest_time['minute'] is not None:
-            now = datetime.datetime.now().time()
+            now = datetime.datetime.now()
 
             alarm_hour = latest_time['hour']
             alarm_minute = latest_time['minute']
@@ -113,12 +113,20 @@ def check_time():
                 trigger_hour = (alarm_hour - 1) % 24  # Ensure it wraps around correctly
                 trigger_minute = alarm_minute + 30
 
+            # Create the trigger time for today
+            trigger_time = now.replace(hour=trigger_hour, minute=trigger_minute, second=0, microsecond=0)
+
+            # If the current time is past the trigger time but the alarm time is still in the future, set trigger time to tomorrow
+            if now > trigger_time and (alarm_hour > now.hour or (alarm_hour == now.hour and alarm_minute > now.minute)):
+                trigger_time += datetime.timedelta(days=1)
+
             # Check if it's time to trigger the alarm
-            if now.hour == trigger_hour and now.minute == trigger_minute:
-                logging.info(f"Running alarm at: {now}")  # Log when the alarm is triggered
+            if now >= trigger_time:
+                logging.info(f"Running alarm at: {now.time()}")  # Log when the alarm is triggered
                 run_alarm(stop_event)  # Pass the stop event to run_alarm
 
         time.sleep(1)  # Check every second
+
 
 
 if __name__ == "__main__":
