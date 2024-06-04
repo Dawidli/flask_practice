@@ -97,26 +97,31 @@ def remap(value, from_min, from_max, to_min, to_max):
 
 
 def check_time():
+    global stop_event
     while True:
         if latest_time['hour'] is not None and latest_time['minute'] is not None:
             now = datetime.datetime.now().time()
-            alarm_time = datetime.time(latest_time['hour'], latest_time['minute'])
 
-            # Calculate 30 minutes before the alarm time
-            trigger_time = datetime.datetime.combine(datetime.date.today(), alarm_time) - datetime.timedelta(minutes=30)
-            trigger_time = trigger_time.time()
+            alarm_hour = latest_time['hour']
+            alarm_minute = latest_time['minute']
+
+            # Calculate 30 minutes before the alarm time without using days
+            if alarm_minute >= 30:
+                trigger_hour = alarm_hour
+                trigger_minute = alarm_minute - 30
+            else:
+                trigger_hour = (alarm_hour - 1) % 24  # Ensure it wraps around correctly
+                trigger_minute = alarm_minute + 30
 
             # Check if it's time to trigger the alarm
-            if now >= trigger_time:
+            if now.hour == trigger_hour and now.minute == trigger_minute:
                 logging.info(f"Running alarm at: {now}")  # Log when the alarm is triggered
                 run_alarm(stop_event)  # Pass the stop event to run_alarm
 
         time.sleep(1)  # Check every second
 
 
-
 if __name__ == "__main__":
     # Start the background thread
-    setup(33)
     Thread(target=check_time, daemon=True).start()
     app.run(debug=True, host='0.0.0.0', port=8080)
