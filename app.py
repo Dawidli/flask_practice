@@ -43,17 +43,17 @@ def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
 def calc_trig(alarm_time: dict):
-    if alarm_time['m'] < 30:
-        trig_m = 60 - (30 - alarm_time['m'])
-        trig_h = alarm_time['h'] - 1
+    if alarm_time['minutes'] < 30:
+        trig_m = 60 - (30 - alarm_time['minutes'])
+        trig_h = alarm_time['hour'] - 1
     else:
-        trig_m = alarm_time['m'] - 30
-        trig_h = alarm_time['h']
+        trig_m = alarm_time['minutes'] - 30
+        trig_h = alarm_time['hour']
     # Check if hours are negative
     if trig_h < 0:
         trig_h = 23
 
-    trig_t = {'h': trig_h, 'm': trig_m}
+    trig_t = {'hour': trig_h, 'minutes': trig_m}
     logging.info(f"Trigger time calculated to: {trig_h}:{trig_m}")
     return trig_t
 
@@ -88,12 +88,12 @@ def run_alarm():
 
 def check_time(trig_time):
     now = datetime.datetime.now()
-    current_t = {'h': now.hour, 'm': now.minute}
-    return (trig_time['h'] == current_t['h']) and (trig_time['m'] == current_t['m'])
+    current_t = {'hour': now.hour, 'minute': now.minute}
+    return (trig_time['hour'] == current_t['hour']) and (trig_time['minute'] == current_t['minute'])
 
 def check_alarm():
     while True:
-        if alarm_time['h'] is not None and alarm_time['m'] is not None:
+        if alarm_time['hour'] is not None and alarm_time['minute'] is not None:
             trig_time = calc_trig(alarm_time)
             while True:
                 if check_time(trig_time):
