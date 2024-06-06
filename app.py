@@ -95,9 +95,8 @@ def check_time(trig_time):
 def check_alarm():
     logging.info("Check_alarm started")
     while True:
-        logging.info("Seeing if webpage had a time set.")
         if alarm_time['hour'] is not None and alarm_time['minute'] is not None:
-            logging.info("Time is detected to be not NONE")
+            logging.info("Alarm time is detected to be not NONE")
             logging.info("Performing calc_trig(alarm_time)")
             trig_time = calc_trig(alarm_time)
             logging.info(f"Trigger time is {trig_time['hour']}:{trig_time['minute']}")
