@@ -1,6 +1,3 @@
-import datetime
-import time
-
 
 # Calc time
 def calc_trig(alarm_time: dict):
