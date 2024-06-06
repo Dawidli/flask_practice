@@ -28,11 +28,12 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    global alarm_time
+    global alarm_time, trig_time
     hour = request.form['hour']
     minute = request.form['minute']
     alarm_time = {'hour': int(hour), 'minute': int(minute)}
     logging.info(f"Alarm time set to: {alarm_time['hour']}:{alarm_time['minute']}")
+    trig_time = calc_trig(alarm_time)
     return jsonify(alarm_time)
 
 @app.route('/get_time', methods=['GET'])
@@ -98,7 +99,6 @@ def check_alarm():
         if alarm_time['hour'] is not None and alarm_time['minute'] is not None:
             logging.info("Alarm time is detected to be not NONE")
             logging.info("Performing calc_trig(alarm_time)")
-            trig_time = calc_trig(alarm_time)
             logging.info(f"Trigger time is {trig_time['hour']}:{trig_time['minute']}")
             while True:
                 logging.info("Checking if trigger time matches current time")
