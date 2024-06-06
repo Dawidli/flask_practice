@@ -81,9 +81,9 @@ def run_alarm():
     for i in range(1800):
         brightness = remap(i, 0, 1800, 30, 100)
         sun(pwm, power=brightness)
-        time.sleep(0.001)
+        time.sleep(1)
     logging.info("Gradual increase is done, sun will die in 1 hour")
-    time.sleep(60)
+    time.sleep(3600)
     sun(pwm, power=0)
 
 def check_time(trig_time):
