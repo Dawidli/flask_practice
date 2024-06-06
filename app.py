@@ -55,6 +55,7 @@ def calc_trig(alarm_time: dict):
         trig_h = 23
 
     trig_t = {'h': trig_h, 'm': trig_m}
+    logging.info(f"Trigger time calculated to: {trig_h}:{trig_m}")
     return trig_t
 
 def setup(pwm_pin: int):
@@ -97,6 +98,7 @@ def check_alarm():
             trig_time = calc_trig(alarm_time)
             while not stop_event.is_set():
                 if check_time(trig_time):
+                    logging.info(f"Running alarm!")
                     run_alarm()
                     break
                 else:
