@@ -89,15 +89,21 @@ def run_alarm():
 def check_time(trig_time):
     now = datetime.datetime.now()
     current_t = {'hour': now.hour, 'minute': now.minute}
+    logging.info(f"Current time is: {current_t['hour']}:{current_t['minute']}")
     return (trig_time['hour'] == current_t['hour']) and (trig_time['minute'] == current_t['minute'])
 
 def check_alarm():
+    logging.info("Check_alarm started")
     while True:
+        logging.info("inside first while")
         if alarm_time['hour'] is not None and alarm_time['minute'] is not None:
+            logging.info("Time is detected to be not NONE")
             trig_time = calc_trig(alarm_time)
+            logging.info(f"Trigger time is {trig_time['hour']}:{trig_time['minute']}")
             while True:
+                logging.info("Checking if trigger time matches current time")
                 if check_time(trig_time):
-                    logging.info(f"Running alarm!")
+                    logging.info(f"Trig matches current, running alarm()")
                     run_alarm()
                     break
                 else:
