@@ -21,7 +21,6 @@ logging.basicConfig(
 app = Flask(__name__)
 
 alarm_time: Dict[str, Optional[int]] = {'hour': None, 'minute': None}
-stop_event = Event()
 
 @app.route('/')
 def index():
@@ -93,10 +92,10 @@ def check_time(trig_time):
     return (trig_time['h'] == current_t['h']) and (trig_time['m'] == current_t['m'])
 
 def check_alarm():
-    while not stop_event.is_set():
+    while True:
         if alarm_time['h'] is not None and alarm_time['m'] is not None:
             trig_time = calc_trig(alarm_time)
-            while not stop_event.is_set():
+            while True:
                 if check_time(trig_time):
                     logging.info(f"Running alarm!")
                     run_alarm()
@@ -114,6 +113,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        stop_event.set()
         alarm_thread.join()
         logging.info("Application stopped.")
