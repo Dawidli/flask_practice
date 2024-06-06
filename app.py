@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 from threading import Thread, Event
-from typing import Dict, Optional
 import datetime
 import time
 import RPi.GPIO as GPIO
@@ -20,8 +19,8 @@ logging.basicConfig(
 
 app = Flask(__name__)
 
-alarm_time = {'h': None,
-              'm': None}
+alarm_time = {'h': None, 'm': None}
+stop_event = Event()
 
 @app.route('/')
 def index():
@@ -40,14 +39,10 @@ def submit():
 def get_time():
     return jsonify(alarm_time)
 
-
-
-
 def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
 def calc_trig(alarm_time: dict):
-
     if alarm_time['m'] < 30:
         trig_m = 60 - (30 - alarm_time['m'])
         trig_h = alarm_time['h'] - 1
@@ -58,13 +53,8 @@ def calc_trig(alarm_time: dict):
     if trig_h < 0:
         trig_h = 23
 
-    trig_t = {'h': trig_h,
-              'm': trig_m}
+    trig_t = {'h': trig_h, 'm': trig_m}
     return trig_t
-
-
-
-
 
 def setup(pwm_pin: int):
     GPIO.setwarnings(False)
@@ -86,46 +76,41 @@ def sun(pwm, power: int):
 
 def run_alarm():
     pwm = setup(33)
-
     for i in range(1800):
         brightness = remap(i, 0, 1800, 30, 100)
         sun(pwm, power=brightness)
         time.sleep(1)
-
-    print("Gradual increase is done, sun will die in 1 hour")
+    logging.info("Gradual increase is done, sun will die in 1 hour")
     time.sleep(3600)
     sun(pwm, power=0)
     destroy(pwm, 33)
 
-
-
-
 def check_time(trig_time):
-
     now = datetime.datetime.now()
-    current_t = {'h': now.hour,
-                 'm': now.minute}
-
-    if (trig_time['h'] == current_t['h']) and (trig_time['m'] == current_t['m']):
-        return True
-    else:
-        return False
+    current_t = {'h': now.hour, 'm': now.minute}
+    return (trig_time['h'] == current_t['h']) and (trig_time['m'] == current_t['m'])
 
 def check_alarm():
-    while True:
+    while not stop_event.is_set():
         if alarm_time['h'] is not None and alarm_time['m'] is not None:
             trig_time = calc_trig(alarm_time)
-        while True:
-            if check_time(trig_time):
-                run_alarm()
-                break
-            else:
-                time.sleep(5)
-
+            while not stop_event.is_set():
+                if check_time(trig_time):
+                    run_alarm()
+                    break
+                else:
+                    time.sleep(5)
+        else:
+            time.sleep(1)
 
 if __name__ == "__main__":
     alarm_thread = Thread(target=check_alarm)
     alarm_thread.start()
-    app.run(debug=True, host='0.0.0.0', port=8080)
-
-    alarm_thread.join()
+    try:
+        app.run(debug=True, host='0.0.0.0', port=8080)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        stop_event.set()
+        alarm_thread.join()
+        logging.info("Application stopped.")
