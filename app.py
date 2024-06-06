@@ -83,9 +83,8 @@ def run_alarm():
         sun(pwm, power=brightness)
         time.sleep(0.001)
     logging.info("Gradual increase is done, sun will die in 1 hour")
-    time.sleep(5)
+    time.sleep(60)
     sun(pwm, power=0)
-    destroy(pwm, 33)
 
 def check_time(trig_time):
     now = datetime.datetime.now()
