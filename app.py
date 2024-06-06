@@ -19,37 +19,51 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
-latest_time: Dict[str, Optional[int]] = {'hour': None, 'minute': None}
-stop_event = None  # Global variable to store the stop event
 
+alarm_time = {'h': None,
+              'm': None}
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
 @app.route('/submit', methods=['POST'])
 def submit():
-    global latest_time, stop_event
+    global alarm_time
     hour = request.form['hour']
     minute = request.form['minute']
-    latest_time = {'hour': int(hour), 'minute': int(minute)}
-    logging.info(f"Alarm time set to: {latest_time['hour']}:{latest_time['minute']}")
-
-    # Stop the previous alarm if it exists
-    if stop_event is not None:
-        stop_event.set()
-        logging.info("Stopping previous alarm.")
-
-    # Reset the stop event
-    stop_event = Event()
-
-    return jsonify(latest_time)
-
+    alarm_time = {'h': int(hour), 'm': int(minute)}
+    logging.info(f"Alarm time set to: {alarm_time['h']}:{alarm_time['m']}")
+    return jsonify(alarm_time)
 
 @app.route('/get_time', methods=['GET'])
 def get_time():
-    return jsonify(latest_time)
+    return jsonify(alarm_time)
+
+
+
+
+def remap(value, from_min, from_max, to_min, to_max):
+    return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
+
+def calc_trig(alarm_time: dict):
+
+    if alarm_time['m'] < 30:
+        trig_m = 60 - (30 - alarm_time['m'])
+        trig_h = alarm_time['h'] - 1
+    else:
+        trig_m = alarm_time['m'] - 30
+        trig_h = alarm_time['h']
+    # Check if hours are negative
+    if trig_h < 0:
+        trig_h = 23
+
+    trig_t = {'h': trig_h,
+              'm': trig_m}
+    return trig_t
+
+
+
 
 
 def setup(pwm_pin: int):
@@ -61,28 +75,19 @@ def setup(pwm_pin: int):
     pwm.start(0)  # Set the starting Duty Cycle
     return pwm
 
-
 def destroy(pwm, pwm_pin):
     pwm.stop()
     GPIO.output(pwm_pin, GPIO.LOW)
     GPIO.cleanup()
 
-
 def sun(pwm, power: int):
     pwm.ChangeDutyCycle(power)
     time.sleep(0.01)
 
-
-def run_alarm(stop_event):
+def run_alarm():
     pwm = setup(33)
 
     for i in range(1800):
-        # Check if the stop event is set
-        if stop_event.is_set():
-            logging.info("New alarm time set. Stopping alarm.")
-            destroy(pwm, 33)  # Stop the alarm
-            return
-
         brightness = remap(i, 0, 1800, 30, 100)
         sun(pwm, power=brightness)
         time.sleep(1)
@@ -90,46 +95,37 @@ def run_alarm(stop_event):
     print("Gradual increase is done, sun will die in 1 hour")
     time.sleep(3600)
     sun(pwm, power=0)
+    destroy(pwm, 33)
 
 
-def remap(value, from_min, from_max, to_min, to_max):
-    return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
 
-def check_time():
-    global stop_event
+def check_time(trig_time):
+
+    now = datetime.datetime.now()
+    current_t = {'h': now.hour,
+                 'm': now.minute}
+
+    if (trig_time['h'] == current_t['h']) and (trig_time['m'] == current_t['m']):
+        return True
+    else:
+        return False
+
+def check_alarm():
     while True:
-        if latest_time['hour'] is not None and latest_time['minute'] is not None:
-            now = datetime.datetime.now()
-
-            alarm_hour = latest_time['hour']
-            alarm_minute = latest_time['minute']
-
-            # Calculate 30 minutes before the alarm time without using days
-            if alarm_minute >= 30:
-                trigger_hour = alarm_hour
-                trigger_minute = alarm_minute - 30
+        if alarm_time['h'] is not None and alarm_time['m'] is not None:
+            trig_time = calc_trig(alarm_time)
+        while True:
+            if check_time(trig_time):
+                run_alarm()
+                break
             else:
-                trigger_hour = (alarm_hour - 1) % 24  # Ensure it wraps around correctly
-                trigger_minute = alarm_minute + 30
-
-            # Create the trigger time for today
-            trigger_time = now.replace(hour=trigger_hour, minute=trigger_minute, second=0, microsecond=0)
-
-            # If the current time is past the trigger time but the alarm time is still in the future, set trigger time to tomorrow
-            if now > trigger_time and (alarm_hour > now.hour or (alarm_hour == now.hour and alarm_minute > now.minute)):
-                trigger_time += datetime.timedelta(days=1)
-
-            # Check if it's time to trigger the alarm
-            if now >= trigger_time:
-                logging.info(f"Running alarm at: {now.time()}")  # Log when the alarm is triggered
-                run_alarm(stop_event)  # Pass the stop event to run_alarm
-
-        time.sleep(1)  # Check every second
-
+                time.sleep(5)
 
 
 if __name__ == "__main__":
-    # Start the background thread
-    Thread(target=check_time, daemon=True).start()
+    alarm_thread = Thread(target=check_alarm)
+    alarm_thread.start()
     app.run(debug=True, host='0.0.0.0', port=8080)
+
+    alarm_thread.join()

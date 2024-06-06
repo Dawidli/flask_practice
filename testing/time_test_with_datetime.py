@@ -22,14 +22,16 @@ def calc_trig(alarm_time: dict):
 
 def main():
     alarm_t = {'h': 14,
-               'm': 22}
+               'm': 31}
+    trig_time = calc_trig(alarm_t)
+
     current_t = {'h': None,
                  'm': None}
     now = datetime.datetime.now()
     current_t['h'] = now.hour
     current_t['m'] = now.minute
 
-    trig_time = calc_trig(alarm_t)
+
 
     print(f'Current time : {current_t["h"]}:{current_t["m"]}')
     print(f'Alarm time   : {alarm_t["h"]}:{alarm_t["m"]}')
