@@ -20,7 +20,7 @@ logging.basicConfig(
 
 app = Flask(__name__)
 
-alarm_time: Dict[str, Optional[int]] = {'hour': None, 'minute': None}
+alarm_time: Dict[str, Optional[int]] = {'hour': None, 'minute': None, 'duration':None}
 
 @app.route('/')
 def index():
@@ -31,7 +31,8 @@ def submit():
     global alarm_time, trig_time
     hour = request.form['hour']
     minute = request.form['minute']
-    alarm_time = {'hour': int(hour), 'minute': int(minute)}
+    duration = int(request.form['duration'])
+    alarm_time = {'hour': int(hour), 'minute': int(minute), 'duration': int(duration)}
     logging.info(f"Alarm time set to: {alarm_time['hour']}:{alarm_time['minute']}")
     trig_time = calc_trig(alarm_time)
     return jsonify(alarm_time)
@@ -78,8 +79,9 @@ def sun(pwm, power: int):
 
 def run_alarm():
     pwm = setup(33)
-    for i in range(1800):
-        brightness = remap(i, 0, 1800, 30, 100)
+    dur = alarm_time['duration']*60
+    for i in range(dur):
+        brightness = remap(i, 0, dur, 30, 100)
         sun(pwm, power=brightness)
         time.sleep(1)
     logging.info("Gradual increase is done, sun will die in 1 hour")
