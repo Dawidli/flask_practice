@@ -45,11 +45,11 @@ def remap(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
 def calc_trig(alarm_time: dict):
-    if alarm_time['minute'] < 30:
-        trig_m = 60 - (30 - alarm_time['minute'])
+    if alarm_time['minute'] < alarm_time['duration']:
+        trig_m = 60 - (alarm_time['duration'] - alarm_time['minute'])
         trig_h = alarm_time['hour'] - 1
     else:
-        trig_m = alarm_time['minute'] - 30
+        trig_m = alarm_time['minute'] - alarm_time['duration']
         trig_h = alarm_time['hour']
     # Check if hours are negative
     if trig_h < 0:
